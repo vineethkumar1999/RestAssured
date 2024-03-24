@@ -1,6 +1,8 @@
 Steps to work with the project: 
 Download all the files or clone. 
+
 In your local perform gradle clean build or ./gradlew build
+
 Once the build succeeds, import the project into Intellij
 
 To Run Tests:
