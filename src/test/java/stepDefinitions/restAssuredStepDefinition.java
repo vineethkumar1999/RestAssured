@@ -14,13 +14,19 @@ import io.restassured.response.ResponseBody;
 import io.restassured.specification.RequestSpecification;
 import org.json.simple.JSONObject;
 import org.junit.Assert;
+import stepDefinitions.Book;
 
+import java.util.List;
 import java.util.Random;
 
 public class restAssuredStepDefinition {
 
     RequestSpecification httpRequest;
     Response response;
+    String Token;
+    static String userName;
+
+    static String password;
 
     @BeforeAll
     public static void setup() {
@@ -59,6 +65,13 @@ public class restAssuredStepDefinition {
         String sBody = body.asString();
         System.out.println(sBody);
         useQueryParameter();
+
+        List<Book> books = response.getBody().jsonPath().getList("books",Book.class);
+        List<String> strings = response.getBody().jsonPath().get("books");
+        for(Book b : books)
+        {
+            System.out.println(b.title + " " + b.isbn);
+        }
     }
 
     public void useQueryParameter() {
@@ -78,18 +91,19 @@ public class restAssuredStepDefinition {
     public void postRequest() {
         Random rand = new Random();
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("userName", "TestUser" + rand.nextInt(1000));
+        userName = "TestUser" + rand.nextInt(1000);
+        jsonObject.put("userName", userName);
         jsonObject.put("password", "Pass@123");
+
         response = httpRequest.header("Content-Type", "application/json")
-                .header("accept","application/json")
+                .header("accept", "application/json")
                 .body(jsonObject.toJSONString())
                 .log().all()
                 .request(Method.POST, "Account/v1/User");
     }
 
     @Then("Validate user created")
-    public void userValidate()
-    {
+    public void userValidate() {
         System.out.println(response.getStatusLine());
         ResponseBody responseBody = response.getBody();
         String res = responseBody.asString();
@@ -97,5 +111,44 @@ public class restAssuredStepDefinition {
         Assert.assertTrue(res.contains("userID"));
         Assert.assertEquals(201, response.getStatusCode());
     }
-    
+
+    @Given("Generate Bearer Api")
+    public void bearerApi() {
+        System.out.println("Just Printing");
+    }
+
+    @When("Authorized with userCredentials {string} {string}")
+    public void authorize(String name, String password) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("userName", name);
+        jsonObject.put("password", password);
+        httpRequest = RestAssured.given();
+        response = httpRequest.header("Content-Type","application/json").body(jsonObject.toJSONString()).log().all().post("Account/v1/GenerateToken");
+    }
+
+    @Then("validate response")
+    public void validateBearer() {
+        System.out.println(response.getStatusLine());
+        response.then().statusCode(200);
+        Token = response.getBody().jsonPath().getString("token");
+    }
+
+    @When("Check is Authorized with {string} {string}")
+    public void isAuthorized(String userName, String password)
+    {
+        JSONObject j = new JSONObject();
+        j.put("userName", userName);
+        j.put("password",password);
+        response = httpRequest.header("Content-Type","application/json").body(j.toJSONString()).log().all().post("Account/v1/Authorized");
+    }
+
+    @Then("Validate authorized true")
+    public void authorized()
+    {
+        Assert.assertEquals(200,response.getStatusCode());
+        Assert.assertEquals("true", response.getBody().asString());
+    }
+
+
+
 }
