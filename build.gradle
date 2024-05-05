@@ -8,25 +8,36 @@ version '1.0-SNAPSHOT'
 repositories {
     mavenCentral()
 }
-
+sourceSets {
+    test {
+        resources {
+            srcDir file('src/test/resources')
+        }
+    }
+}
 
 dependencies {
     implementation 'io.rest-assured:rest-assured:5.4.0'
     implementation 'io.cucumber:cucumber-java:7.15.0'
     implementation 'io.cucumber:cucumber-junit:7.15.0'
-    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+//    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+    implementation 'org.json:json:20240303'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.17.0'
-
+    runtimeOnly 'io.cucumber:cucumber-junit-platform-engine:7.15.0'
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
+//    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
 
 //    testImplementation 'io.cucumber:cucumber-jvm-deps:1.0.6'
 
 }
 
+processTestResources {
+    duplicatesStrategy = 'exclude'
+}
+
 test {
-    useJUnitPlatform()
+    useJUnit()
     testLogging {
         events("passed", "skipped", "failed")
     }

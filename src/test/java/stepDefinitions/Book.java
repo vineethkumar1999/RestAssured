@@ -7,9 +7,9 @@ public class Book {
     //This is a POJO
     String isbn;
     String title;
-    String subTitle; // Make sure the field names match the JSON keys
+    String subTitle;
     String author;
-    String publish_date; // Match the date format in the JSON
+    String publish_date;
     String publisher;
     int pages;
     String description;

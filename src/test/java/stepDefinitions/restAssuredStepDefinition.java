@@ -12,9 +12,11 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.response.ResponseBody;
 import io.restassured.specification.RequestSpecification;
-import org.json.simple.JSONObject;
+//import org.json.simple.JSONObject;
+import org.json.JSONArray;
 import org.junit.Assert;
 import stepDefinitions.Book;
+import org.json.JSONObject;
 
 import java.util.List;
 import java.util.Random;
@@ -52,7 +54,7 @@ public class restAssuredStepDefinition {
     @Then("Validate book response")
     public void validateBookResponse() {
         Assert.assertEquals(200, response.getStatusCode());
-        System.out.println(response.prettyPrint());
+//        System.out.println(response.prettyPrint());
         //to get status related info use getStatusCode, getStatusLine
         //to read the response headers use headers class, getHeaders or Header or Headers
         Headers allHeaders = response.getHeaders();
@@ -64,10 +66,17 @@ public class restAssuredStepDefinition {
         ResponseBody body = response.getBody();
         String sBody = body.asString();
         System.out.println(sBody);
+
+        JSONObject j = new JSONObject(response.body().asString());
+        JSONArray arr = j.getJSONArray("books");
+        System.out.println(arr);
+        JSONObject j2 = arr.getJSONObject(0);
+        System.out.println(j2);
+        Assert.assertNotEquals("http://chimera.labs.oreilly.com/books/1230000000561/index.html",j2.get("website"));
         useQueryParameter();
 
         List<Book> books = response.getBody().jsonPath().getList("books",Book.class);
-        List<String> strings = response.getBody().jsonPath().get("books");
+//        List<String> strings = response.getBody().jsonPath().get("books");
         for(Book b : books)
         {
             System.out.println(b.title + " " + b.isbn);
@@ -85,6 +94,12 @@ public class restAssuredStepDefinition {
         //Storing publisher name in a string variable
         String title = jpath.getString("title");
         System.out.println("The book title is - " + title);
+//        JSONObject j = new JSONObject(response.asString());
+        JSONObject j = new JSONObject(res.body().asString());
+        System.out.println("Now Printing");
+        System.out.println(j);
+        System.out.println(j.get("website"));
+
     }
 
     @When("post the create user")
@@ -97,7 +112,7 @@ public class restAssuredStepDefinition {
 
         response = httpRequest.header("Content-Type", "application/json")
                 .header("accept", "application/json")
-                .body(jsonObject.toJSONString())
+                .body(jsonObject.toString())
                 .log().all()
                 .request(Method.POST, "Account/v1/User");
     }
@@ -123,7 +138,7 @@ public class restAssuredStepDefinition {
         jsonObject.put("userName", name);
         jsonObject.put("password", password);
         httpRequest = RestAssured.given();
-        response = httpRequest.header("Content-Type","application/json").body(jsonObject.toJSONString()).log().all().post("Account/v1/GenerateToken");
+        response = httpRequest.header("Content-Type","application/json").body(jsonObject.toString()).log().all().post("Account/v1/GenerateToken");
     }
 
     @Then("validate response")
@@ -139,7 +154,7 @@ public class restAssuredStepDefinition {
         JSONObject j = new JSONObject();
         j.put("userName", userName);
         j.put("password",password);
-        response = httpRequest.header("Content-Type","application/json").body(j.toJSONString()).log().all().post("Account/v1/Authorized");
+        response = httpRequest.header("Content-Type","application/json").body(j.toString()).log().all().post("Account/v1/Authorized");
     }
 
     @Then("Validate authorized true")
